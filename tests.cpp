@@ -36,35 +36,58 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <stdio.h>
 
-int main (int argc, char **argv)
+void testAssert(const char *expr, int line, const char *file)
+{
+	fprintf (stderr, "%s:%d: %s\n", file, line, expr);
+	getchar();
+	abort();
+}
+
+#define ASSERT(_x) if (!(_x)) testAssert(#_x, __LINE__, __FILE__);
+
+void test_UTF32ToUTF8()
 {
   UTF8 utf8[5];
   UTF32 utf32;
-  UTF16 utf16[2];
-  int hasError = 0;
-
-  // UTF32 to UTF8 and back
   uuUTF32ToUTF8(0xc5, utf8);
   uuUTF8ToUTF32(utf8, utf8 + 4, &utf32);
-  assert (utf32 == 0xc5);
+  ASSERT (utf32 == 0xc5);
+}
 
-  // UTF32 to UTF16 and back
+void test_UTF32ToUTF16()
+{
+  UTF16 utf16[2];
+  UTF32 utf32 = 0xc5;
   uuUTF32ToUTF16(utf32, utf16);
   uuUTF16ToUTF32(utf16, utf16 + 2, &utf32);
-  assert (utf32 == 0xc5);
+  ASSERT (utf32 == 0xc5);
+}
 
-  // UTF32 to UTF8 and back test of supplementary code point
+void test_UTF32ToUTF8Supplementary()
+{
+  UTF8 utf8[5];
+  UTF32 utf32;
   uuUTF32ToUTF8(0x2070e, utf8);
   uuUTF8ToUTF32(utf8, utf8 + 4, &utf32);
-  assert (utf32 == 0x2070e);
+  ASSERT (utf32 == 0x2070e);
+}
 
-  // UTF16 surrogate pair test
+void test_UTF16Surrogate()
+{
+  UTF16 utf16[2];
+  UTF32 utf32 = 0x2070e;
   uuUTF32ToUTF16(utf32, utf16);
   uuUTF16ToUTF32(utf16, utf16 + 2, &utf32);
-  assert (utf32 == 0x2070e);
+  ASSERT (utf32 == 0x2070e);
+}
 
-  // BOM detection and error catch
+void test_DetectBOM()
+{
+  UTF8 utf8[5];
+  UTF32 utf32;
   utf8[0] = 0xfe;
+  int hasError = 0;
+
   UUNICODE_TRY()
   {
     uuUTF8ToUTF32(utf8, utf8+1, &utf32);
@@ -76,33 +99,41 @@ int main (int argc, char **argv)
   {
     hasError = UUNICODE_ERRNO();   
   }
-  assert (hasError == UUERR_BOM_DETECTED);
+  ASSERT (hasError == UUERR_BOM_DETECTED);
+}
 
-  {
-    wchar_t wideStr[2];
-    size_t wideLen = 2;
 
-    utf8[0] = 'A';
-    UUNICODE_TRY()
-    {
-      uuUTF8ToWide(utf8, utf8 + 1, wideStr, &wideLen);
-    }
-    assert (wideLen == 1);
-  }
+void test_UTF8ToWide()
+{
+  UTF8 utf8[5];
+  wchar_t wideStr[2];
+  size_t wideLen = 2;
 
-  {
-    wchar_t wideStr[2];
-    size_t wideLen = 2;
+  utf8[0] = 0xf0;
+  utf8[1] = 0xa0;
+  utf8[2] = 0x9c;
+  utf8[3] = 0x8e;
 
-    utf8[0] = 0xf0;
-    utf8[1] = 0xa0;
-    utf8[2] = 0x9c;
-    utf8[3] = 0x8e;
+  uuUTF8ToWide(utf8, utf8 + 4, wideStr, &wideLen);
 
-    uuUTF8ToWide(utf8, utf8 + 4, wideStr, &wideLen);
+#if WCHAR_MAX == 0xffff
+  ASSERT (wideLen == 2);
+#else
+  ASSERT (wideLen == 1);
+#endif
 
-    assert (wideLen == 2);
-  }
+}
+
+int main (int argc, char **argv)
+{
+  test_UTF32ToUTF8();
+  test_UTF32ToUTF16();
+  test_UTF32ToUTF8Supplementary();
+  test_UTF16Surrogate();
+  test_DetectBOM();
+  test_UTF8ToWide();
+
+  fprintf (stderr, "All tests successful!\n");
 
   return 0;
 }
