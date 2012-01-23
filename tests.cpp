@@ -8,16 +8,16 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.
+notice, this list of conditions and the following disclaimer.
 2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
 3. All advertising materials mentioning features or use of this software
-   must display the following acknowledgement:
-   This product includes software developed by ESN Social Software AB (www.esn.me).
+must display the following acknowledgement:
+This product includes software developed by ESN Social Software AB (www.esn.me).
 4. Neither the name of the ESN Social Software AB nor the
-   names of its contributors may be used to endorse or promote products
-   derived from this software without specific prior written permission.
+names of its contributors may be used to endorse or promote products
+derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY ESN SOCIAL SOFTWARE AB ''AS IS'' AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -44,14 +44,14 @@ int main (int argc, char **argv)
   int hasError = 0;
 
   // UTF32 to UTF8 and back
-  uuUTF32ToUTF8(L'Å', utf8);
+  uuUTF32ToUTF8(0xc5, utf8);
   uuUTF8ToUTF32(utf8, utf8 + 4, &utf32);
-  assert (utf32 == L'Å');
+  assert (utf32 == 0xc5);
 
   // UTF32 to UTF16 and back
   uuUTF32ToUTF16(utf32, utf16);
   uuUTF16ToUTF32(utf16, utf16 + 2, &utf32);
-  assert (utf32 == L'Å');
+  assert (utf32 == 0xc5);
 
   // UTF32 to UTF8 and back test of supplementary code point
   uuUTF32ToUTF8(0x2070e, utf8);
