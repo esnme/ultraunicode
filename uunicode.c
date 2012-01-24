@@ -233,12 +233,13 @@ int uuUTF8ToUTF32(const UTF8 *in, const UTF8 *end, UTF32 *out)
   //case 0:
   //  _uuSetError(UUERR_SUCCESS);
 
-  case 7:
-    _uuSetError(UUERR_BOM_DETECTED);
-
   case 5:
   case 6:
     _uuSetError(UUERR_INVALID_UTF8_SEQUENCE_LENGTH);
+
+  default:
+    _uuSetError(UUERR_BOM_DETECTED);
+
 
   }
 
